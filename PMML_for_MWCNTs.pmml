@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<PMML xmlns="http://www.dmg.org/PMML-4_3" xmlns:data="http://jpmml.org/jpmml-model/InlineTable" version="4.3">
+	<Header>
+		<Application name="JPMML-SkLearn" version="1.5.25"/>
+		<Timestamp>2020-06-13T14:08:21Z</Timestamp>
+	</Header>
+	<MiningBuildTask>
+		<Extension>PMMLPipeline(steps=[('scale', MinMaxScaler(copy=True, feature_range=(0, 1))),
+       ('classifier', LogisticRegression(C=1374.54, class_weight=None, dual=False,
+          fit_intercept=True, intercept_scaling=1, max_iter=100,
+          multi_class='warn', n_jobs=None, penalty='l1', random_state=42,
+          solver='warn', tol=0.0001, verbose=0, warm_start=False))])</Extension>
+	</MiningBuildTask>
+	<DataDictionary>
+		<DataField name="Genotoxicity" optype="categorical" dataType="integer">
+			<Value value="0"/>
+			<Value value="1"/>
+		</DataField>
+		<DataField name="Purity (%)" optype="continuous" dataType="double"/>
+		<DataField name="PdI (batch)" optype="continuous" dataType="double"/>
+		<DataField name="Zave (12.5 ug/ml)" optype="continuous" dataType="double"/>
+		<DataField name="Type_OH" optype="continuous" dataType="double"/>
+	</DataDictionary>
+	<TransformationDictionary/>
+	<RegressionModel functionName="classification" normalizationMethod="logit">
+		<MiningSchema>
+			<MiningField name="Genotoxicity" usageType="target"/>
+			<MiningField name="Type_OH"/>
+			<MiningField name="Purity (%)"/>
+			<MiningField name="PdI (batch)"/>
+			<MiningField name="Zave (12.5 ug/ml)"/>
+		</MiningSchema>
+		<Output>
+			<OutputField name="probability(0)" optype="continuous" dataType="double" feature="probability" value="0"/>
+			<OutputField name="probability(1)" optype="continuous" dataType="double" feature="probability" value="1"/>
+		</Output>
+		<LocalTransformations>
+			<DerivedField name="mix_max_scaler(Purity (%))" optype="continuous" dataType="double">
+				<Apply function="+">
+					<Apply function="*">
+						<FieldRef field="Purity (%)"/>
+						<Constant dataType="double">0.10869565217391301</Constant>
+					</Apply>
+					<Constant dataType="double">-9.78260869565217</Constant>
+				</Apply>
+			</DerivedField>
+			<DerivedField name="mix_max_scaler(PdI (batch))" optype="continuous" dataType="double">
+				<Apply function="+">
+					<Apply function="*">
+						<FieldRef field="PdI (batch)"/>
+						<Constant dataType="double">2.6666666666666665</Constant>
+					</Apply>
+					<Constant dataType="double">-0.6053333333333333</Constant>
+				</Apply>
+			</DerivedField>
+			<DerivedField name="mix_max_scaler(Zave (12.5 ug/ml))" optype="continuous" dataType="double">
+				<Apply function="+">
+					<Apply function="*">
+						<FieldRef field="Zave (12.5 ug/ml)"/>
+						<Constant dataType="double">0.001455604075691412</Constant>
+					</Apply>
+					<Constant dataType="double">-0.21106259097525473</Constant>
+				</Apply>
+			</DerivedField>
+		</LocalTransformations>
+		<RegressionTable intercept="22.37226696811699" targetCategory="1">
+			<NumericPredictor name="mix_max_scaler(Purity (%))" coefficient="-30.732376635614756"/>
+			<NumericPredictor name="mix_max_scaler(PdI (batch))" coefficient="-26.389552383366023"/>
+			<NumericPredictor name="mix_max_scaler(Zave (12.5 ug/ml))" coefficient="15.845051201129447"/>
+			<NumericPredictor name="Type_OH" coefficient="7.360875811663306"/>
+		</RegressionTable>
+		<RegressionTable intercept="0.0" targetCategory="0"/>
+	</RegressionModel>
+</PMML>
