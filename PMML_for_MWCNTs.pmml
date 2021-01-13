@@ -1,33 +1,30 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<PMML xmlns="http://www.dmg.org/PMML-4_3" xmlns:data="http://jpmml.org/jpmml-model/InlineTable" version="4.3">
+<PMML xmlns="http://www.dmg.org/PMML-4_4" xmlns:data="http://jpmml.org/jpmml-model/InlineTable" version="4.4">
 	<Header>
-		<Application name="JPMML-SkLearn" version="1.5.25"/>
-		<Timestamp>2020-06-13T14:08:21Z</Timestamp>
+		<Application name="JPMML-SkLearn" version="1.6.7"/>
+		<Timestamp>2021-01-13T12:52:54Z</Timestamp>
 	</Header>
 	<MiningBuildTask>
-		<Extension>PMMLPipeline(steps=[('scale', MinMaxScaler(copy=True, feature_range=(0, 1))),
-       ('classifier', LogisticRegression(C=1374.54, class_weight=None, dual=False,
-          fit_intercept=True, intercept_scaling=1, max_iter=100,
-          multi_class='warn', n_jobs=None, penalty='l1', random_state=42,
-          solver='warn', tol=0.0001, verbose=0, warm_start=False))])</Extension>
+		<Extension>PMMLPipeline(steps=[('scale', MinMaxScaler()),
+       ('classifier', RandomForestClassifier(max_features=0.6664580622368363,
+                       min_samples_split=0.11646759543664197, n_estimators=19,
+                       random_state=42))])</Extension>
 	</MiningBuildTask>
 	<DataDictionary>
 		<DataField name="Genotoxicity" optype="categorical" dataType="integer">
 			<Value value="0"/>
 			<Value value="1"/>
 		</DataField>
+		<DataField name="Length ave. (nm) " optype="continuous" dataType="double"/>
 		<DataField name="Purity (%)" optype="continuous" dataType="double"/>
-		<DataField name="PdI (batch)" optype="continuous" dataType="double"/>
 		<DataField name="Zave (12.5 ug/ml)" optype="continuous" dataType="double"/>
-		<DataField name="Type_OH" optype="continuous" dataType="double"/>
 	</DataDictionary>
 	<TransformationDictionary/>
-	<RegressionModel functionName="classification" normalizationMethod="logit">
+	<MiningModel functionName="classification">
 		<MiningSchema>
 			<MiningField name="Genotoxicity" usageType="target"/>
-			<MiningField name="Type_OH"/>
+			<MiningField name="Length ave. (nm) "/>
 			<MiningField name="Purity (%)"/>
-			<MiningField name="PdI (batch)"/>
 			<MiningField name="Zave (12.5 ug/ml)"/>
 		</MiningSchema>
 		<Output>
@@ -35,7 +32,16 @@
 			<OutputField name="probability(1)" optype="continuous" dataType="double" feature="probability" value="1"/>
 		</Output>
 		<LocalTransformations>
-			<DerivedField name="mix_max_scaler(Purity (%))" optype="continuous" dataType="double">
+			<DerivedField name="minMaxScaler(Length ave. (nm) )" optype="continuous" dataType="double">
+				<Apply function="+">
+					<Apply function="*">
+						<FieldRef field="Length ave. (nm) "/>
+						<Constant dataType="double">1.930092065391519E-4</Constant>
+					</Apply>
+					<Constant dataType="double">-0.10015247727316591</Constant>
+				</Apply>
+			</DerivedField>
+			<DerivedField name="minMaxScaler(Purity (%))" optype="continuous" dataType="double">
 				<Apply function="+">
 					<Apply function="*">
 						<FieldRef field="Purity (%)"/>
@@ -44,16 +50,7 @@
 					<Constant dataType="double">-9.78260869565217</Constant>
 				</Apply>
 			</DerivedField>
-			<DerivedField name="mix_max_scaler(PdI (batch))" optype="continuous" dataType="double">
-				<Apply function="+">
-					<Apply function="*">
-						<FieldRef field="PdI (batch)"/>
-						<Constant dataType="double">2.6666666666666665</Constant>
-					</Apply>
-					<Constant dataType="double">-0.6053333333333333</Constant>
-				</Apply>
-			</DerivedField>
-			<DerivedField name="mix_max_scaler(Zave (12.5 ug/ml))" optype="continuous" dataType="double">
+			<DerivedField name="minMaxScaler(Zave (12.5 ug/ml))" optype="continuous" dataType="double">
 				<Apply function="+">
 					<Apply function="*">
 						<FieldRef field="Zave (12.5 ug/ml)"/>
@@ -62,13 +59,615 @@
 					<Constant dataType="double">-0.21106259097525473</Constant>
 				</Apply>
 			</DerivedField>
+			<DerivedField name="float(minMaxScaler(Length ave. (nm) ))" optype="continuous" dataType="float">
+				<FieldRef field="minMaxScaler(Length ave. (nm) )"/>
+			</DerivedField>
+			<DerivedField name="float(minMaxScaler(Purity (%)))" optype="continuous" dataType="float">
+				<FieldRef field="minMaxScaler(Purity (%))"/>
+			</DerivedField>
+			<DerivedField name="float(minMaxScaler(Zave (12.5 ug/ml)))" optype="continuous" dataType="float">
+				<FieldRef field="minMaxScaler(Zave (12.5 ug/ml))"/>
+			</DerivedField>
+			<DerivedField name="double(float(minMaxScaler(Length ave. (nm) )))" optype="continuous" dataType="double">
+				<FieldRef field="float(minMaxScaler(Length ave. (nm) ))"/>
+			</DerivedField>
+			<DerivedField name="double(float(minMaxScaler(Purity (%))))" optype="continuous" dataType="double">
+				<FieldRef field="float(minMaxScaler(Purity (%)))"/>
+			</DerivedField>
+			<DerivedField name="double(float(minMaxScaler(Zave (12.5 ug/ml))))" optype="continuous" dataType="double">
+				<FieldRef field="float(minMaxScaler(Zave (12.5 ug/ml)))"/>
+			</DerivedField>
 		</LocalTransformations>
-		<RegressionTable intercept="22.37226696811699" targetCategory="1">
-			<NumericPredictor name="mix_max_scaler(Purity (%))" coefficient="-30.732376635614756"/>
-			<NumericPredictor name="mix_max_scaler(PdI (batch))" coefficient="-26.389552383366023"/>
-			<NumericPredictor name="mix_max_scaler(Zave (12.5 ug/ml))" coefficient="15.845051201129447"/>
-			<NumericPredictor name="Type_OH" coefficient="7.360875811663306"/>
-		</RegressionTable>
-		<RegressionTable intercept="0.0" targetCategory="0"/>
-	</RegressionModel>
+		<Segmentation multipleModelMethod="average">
+			<Segment id="1">
+				<True/>
+				<TreeModel functionName="classification" missingValueStrategy="nullPrediction">
+					<MiningSchema>
+						<MiningField name="double(float(minMaxScaler(Length ave. (nm) )))"/>
+						<MiningField name="double(float(minMaxScaler(Purity (%))))"/>
+					</MiningSchema>
+					<Node>
+						<True/>
+						<Node score="0" recordCount="7">
+							<SimplePredicate field="double(float(minMaxScaler(Length ave. (nm) )))" operator="lessOrEqual" value="0.05602092295885086"/>
+							<ScoreDistribution value="0" recordCount="7"/>
+							<ScoreDistribution value="1" recordCount="0"/>
+						</Node>
+						<Node score="1" recordCount="5">
+							<SimplePredicate field="double(float(minMaxScaler(Purity (%))))" operator="lessOrEqual" value="0.6396739184856415"/>
+							<ScoreDistribution value="0" recordCount="0"/>
+							<ScoreDistribution value="1" recordCount="5"/>
+						</Node>
+						<Node score="0" recordCount="3">
+							<True/>
+							<ScoreDistribution value="0" recordCount="3"/>
+							<ScoreDistribution value="1" recordCount="0"/>
+						</Node>
+					</Node>
+				</TreeModel>
+			</Segment>
+			<Segment id="2">
+				<True/>
+				<TreeModel functionName="classification" missingValueStrategy="nullPrediction">
+					<MiningSchema>
+						<MiningField name="double(float(minMaxScaler(Zave (12.5 ug/ml))))"/>
+					</MiningSchema>
+					<Node>
+						<True/>
+						<Node score="0" recordCount="11">
+							<SimplePredicate field="double(float(minMaxScaler(Zave (12.5 ug/ml))))" operator="lessOrEqual" value="0.1659388691186905"/>
+							<ScoreDistribution value="0" recordCount="11"/>
+							<ScoreDistribution value="1" recordCount="0"/>
+						</Node>
+						<Node score="1" recordCount="4">
+							<True/>
+							<ScoreDistribution value="0" recordCount="0"/>
+							<ScoreDistribution value="1" recordCount="4"/>
+						</Node>
+					</Node>
+				</TreeModel>
+			</Segment>
+			<Segment id="3">
+				<True/>
+				<TreeModel functionName="classification" missingValueStrategy="nullPrediction">
+					<MiningSchema>
+						<MiningField name="double(float(minMaxScaler(Length ave. (nm) )))"/>
+						<MiningField name="double(float(minMaxScaler(Purity (%))))"/>
+						<MiningField name="double(float(minMaxScaler(Zave (12.5 ug/ml))))"/>
+					</MiningSchema>
+					<Node>
+						<True/>
+						<Node score="1" recordCount="4">
+							<SimplePredicate field="double(float(minMaxScaler(Purity (%))))" operator="lessOrEqual" value="0.8097826242446899"/>
+							<ScoreDistribution value="0" recordCount="0"/>
+							<ScoreDistribution value="1" recordCount="4"/>
+						</Node>
+						<Node>
+							<SimplePredicate field="double(float(minMaxScaler(Purity (%))))" operator="lessOrEqual" value="0.967391312122345"/>
+							<Node>
+								<SimplePredicate field="double(float(minMaxScaler(Purity (%))))" operator="lessOrEqual" value="0.9402174055576324"/>
+								<Node score="0" recordCount="1">
+									<SimplePredicate field="double(float(minMaxScaler(Length ave. (nm) )))" operator="lessOrEqual" value="0.07827488332986832"/>
+									<ScoreDistribution value="0" recordCount="1"/>
+									<ScoreDistribution value="1" recordCount="0"/>
+								</Node>
+								<Node score="1" recordCount="1">
+									<True/>
+									<ScoreDistribution value="0" recordCount="0"/>
+									<ScoreDistribution value="1" recordCount="1"/>
+								</Node>
+							</Node>
+							<Node score="0" recordCount="6">
+								<True/>
+								<ScoreDistribution value="0" recordCount="6"/>
+								<ScoreDistribution value="1" recordCount="0"/>
+							</Node>
+						</Node>
+						<Node score="0" recordCount="1">
+							<SimplePredicate field="double(float(minMaxScaler(Zave (12.5 ug/ml))))" operator="lessOrEqual" value="0.5072780204936862"/>
+							<ScoreDistribution value="0" recordCount="1"/>
+							<ScoreDistribution value="1" recordCount="0"/>
+						</Node>
+						<Node score="1" recordCount="2">
+							<True/>
+							<ScoreDistribution value="0" recordCount="0"/>
+							<ScoreDistribution value="1" recordCount="2"/>
+						</Node>
+					</Node>
+				</TreeModel>
+			</Segment>
+			<Segment id="4">
+				<True/>
+				<TreeModel functionName="classification" missingValueStrategy="nullPrediction">
+					<MiningSchema>
+						<MiningField name="double(float(minMaxScaler(Purity (%))))"/>
+						<MiningField name="double(float(minMaxScaler(Zave (12.5 ug/ml))))"/>
+					</MiningSchema>
+					<Node>
+						<True/>
+						<Node score="0" recordCount="8">
+							<SimplePredicate field="double(float(minMaxScaler(Zave (12.5 ug/ml))))" operator="lessOrEqual" value="0.1659388691186905"/>
+							<ScoreDistribution value="0" recordCount="8"/>
+							<ScoreDistribution value="1" recordCount="0"/>
+						</Node>
+						<Node score="1" recordCount="5">
+							<SimplePredicate field="double(float(minMaxScaler(Purity (%))))" operator="lessOrEqual" value="0.9402174055576324"/>
+							<ScoreDistribution value="0" recordCount="0"/>
+							<ScoreDistribution value="1" recordCount="5"/>
+						</Node>
+						<Node score="0" recordCount="2">
+							<True/>
+							<ScoreDistribution value="0" recordCount="2"/>
+							<ScoreDistribution value="1" recordCount="0"/>
+						</Node>
+					</Node>
+				</TreeModel>
+			</Segment>
+			<Segment id="5">
+				<True/>
+				<TreeModel functionName="classification" missingValueStrategy="nullPrediction">
+					<MiningSchema>
+						<MiningField name="double(float(minMaxScaler(Purity (%))))"/>
+						<MiningField name="double(float(minMaxScaler(Zave (12.5 ug/ml))))"/>
+					</MiningSchema>
+					<Node>
+						<True/>
+						<Node>
+							<SimplePredicate field="double(float(minMaxScaler(Zave (12.5 ug/ml))))" operator="lessOrEqual" value="0.8296943306922913"/>
+							<Node score="1" recordCount="2">
+								<SimplePredicate field="double(float(minMaxScaler(Purity (%))))" operator="lessOrEqual" value="0.46195653080940247"/>
+								<ScoreDistribution value="0" recordCount="0"/>
+								<ScoreDistribution value="1" recordCount="2"/>
+							</Node>
+							<Node score="0" recordCount="11">
+								<True/>
+								<ScoreDistribution value="0" recordCount="11"/>
+								<ScoreDistribution value="1" recordCount="0"/>
+							</Node>
+						</Node>
+						<Node score="1" recordCount="2">
+							<True/>
+							<ScoreDistribution value="0" recordCount="0"/>
+							<ScoreDistribution value="1" recordCount="2"/>
+						</Node>
+					</Node>
+				</TreeModel>
+			</Segment>
+			<Segment id="6">
+				<True/>
+				<TreeModel functionName="classification" missingValueStrategy="nullPrediction">
+					<MiningSchema>
+						<MiningField name="double(float(minMaxScaler(Purity (%))))"/>
+					</MiningSchema>
+					<Node>
+						<True/>
+						<Node score="1" recordCount="4">
+							<SimplePredicate field="double(float(minMaxScaler(Purity (%))))" operator="lessOrEqual" value="0.8043478429317474"/>
+							<ScoreDistribution value="0" recordCount="0"/>
+							<ScoreDistribution value="1" recordCount="4"/>
+						</Node>
+						<Node score="0" recordCount="11">
+							<True/>
+							<ScoreDistribution value="0" recordCount="11"/>
+							<ScoreDistribution value="1" recordCount="0"/>
+						</Node>
+					</Node>
+				</TreeModel>
+			</Segment>
+			<Segment id="7">
+				<True/>
+				<TreeModel functionName="classification" missingValueStrategy="nullPrediction">
+					<MiningSchema>
+						<MiningField name="double(float(minMaxScaler(Purity (%))))"/>
+					</MiningSchema>
+					<Node>
+						<True/>
+						<Node score="1" recordCount="8">
+							<SimplePredicate field="double(float(minMaxScaler(Purity (%))))" operator="lessOrEqual" value="0.8043478429317474"/>
+							<ScoreDistribution value="0" recordCount="0"/>
+							<ScoreDistribution value="1" recordCount="8"/>
+						</Node>
+						<Node score="0" recordCount="7">
+							<True/>
+							<ScoreDistribution value="0" recordCount="7"/>
+							<ScoreDistribution value="1" recordCount="0"/>
+						</Node>
+					</Node>
+				</TreeModel>
+			</Segment>
+			<Segment id="8">
+				<True/>
+				<TreeModel functionName="classification" missingValueStrategy="nullPrediction">
+					<MiningSchema>
+						<MiningField name="double(float(minMaxScaler(Length ave. (nm) )))"/>
+						<MiningField name="double(float(minMaxScaler(Purity (%))))"/>
+						<MiningField name="double(float(minMaxScaler(Zave (12.5 ug/ml))))"/>
+					</MiningSchema>
+					<Node>
+						<True/>
+						<Node score="0" recordCount="6">
+							<SimplePredicate field="double(float(minMaxScaler(Length ave. (nm) )))" operator="lessOrEqual" value="0.05602092295885086"/>
+							<ScoreDistribution value="0" recordCount="6"/>
+							<ScoreDistribution value="1" recordCount="0"/>
+						</Node>
+						<Node>
+							<SimplePredicate field="double(float(minMaxScaler(Purity (%))))" operator="lessOrEqual" value="0.988586962223053"/>
+							<Node score="0" recordCount="1">
+								<SimplePredicate field="double(float(minMaxScaler(Zave (12.5 ug/ml))))" operator="lessOrEqual" value="0.0989810791797936"/>
+								<ScoreDistribution value="0" recordCount="1"/>
+								<ScoreDistribution value="1" recordCount="0"/>
+							</Node>
+							<Node score="1" recordCount="6">
+								<True/>
+								<ScoreDistribution value="0" recordCount="0"/>
+								<ScoreDistribution value="1" recordCount="6"/>
+							</Node>
+						</Node>
+						<Node score="0" recordCount="2">
+							<True/>
+							<ScoreDistribution value="0" recordCount="2"/>
+							<ScoreDistribution value="1" recordCount="0"/>
+						</Node>
+					</Node>
+				</TreeModel>
+			</Segment>
+			<Segment id="9">
+				<True/>
+				<TreeModel functionName="classification" missingValueStrategy="nullPrediction">
+					<MiningSchema>
+						<MiningField name="double(float(minMaxScaler(Purity (%))))"/>
+						<MiningField name="double(float(minMaxScaler(Zave (12.5 ug/ml))))"/>
+					</MiningSchema>
+					<Node>
+						<True/>
+						<Node score="0" recordCount="4">
+							<SimplePredicate field="double(float(minMaxScaler(Zave (12.5 ug/ml))))" operator="lessOrEqual" value="0.10116448532789946"/>
+							<ScoreDistribution value="0" recordCount="4"/>
+							<ScoreDistribution value="1" recordCount="0"/>
+						</Node>
+						<Node score="1" recordCount="10">
+							<SimplePredicate field="double(float(minMaxScaler(Purity (%))))" operator="lessOrEqual" value="0.9402174055576324"/>
+							<ScoreDistribution value="0" recordCount="0"/>
+							<ScoreDistribution value="1" recordCount="10"/>
+						</Node>
+						<Node score="0" recordCount="1">
+							<True/>
+							<ScoreDistribution value="0" recordCount="1"/>
+							<ScoreDistribution value="1" recordCount="0"/>
+						</Node>
+					</Node>
+				</TreeModel>
+			</Segment>
+			<Segment id="10">
+				<True/>
+				<TreeModel functionName="classification" missingValueStrategy="nullPrediction">
+					<MiningSchema>
+						<MiningField name="double(float(minMaxScaler(Length ave. (nm) )))"/>
+						<MiningField name="double(float(minMaxScaler(Purity (%))))"/>
+					</MiningSchema>
+					<Node>
+						<True/>
+						<Node score="0" recordCount="4">
+							<SimplePredicate field="double(float(minMaxScaler(Length ave. (nm) )))" operator="lessOrEqual" value="0.05214143730700016"/>
+							<ScoreDistribution value="0" recordCount="4"/>
+							<ScoreDistribution value="1" recordCount="0"/>
+						</Node>
+						<Node score="1" recordCount="5">
+							<SimplePredicate field="double(float(minMaxScaler(Purity (%))))" operator="lessOrEqual" value="0.6396739184856415"/>
+							<ScoreDistribution value="0" recordCount="0"/>
+							<ScoreDistribution value="1" recordCount="5"/>
+						</Node>
+						<Node score="0" recordCount="4">
+							<SimplePredicate field="double(float(minMaxScaler(Length ave. (nm) )))" operator="lessOrEqual" value="0.6047171428799629"/>
+							<ScoreDistribution value="0" recordCount="4"/>
+							<ScoreDistribution value="1" recordCount="0"/>
+						</Node>
+						<Node score="1" recordCount="2">
+							<True/>
+							<ScoreDistribution value="0" recordCount="0"/>
+							<ScoreDistribution value="1" recordCount="2"/>
+						</Node>
+					</Node>
+				</TreeModel>
+			</Segment>
+			<Segment id="11">
+				<True/>
+				<TreeModel functionName="classification" missingValueStrategy="nullPrediction">
+					<MiningSchema>
+						<MiningField name="double(float(minMaxScaler(Length ave. (nm) )))"/>
+						<MiningField name="double(float(minMaxScaler(Zave (12.5 ug/ml))))"/>
+					</MiningSchema>
+					<Node>
+						<True/>
+						<Node score="0" recordCount="8">
+							<SimplePredicate field="double(float(minMaxScaler(Length ave. (nm) )))" operator="lessOrEqual" value="0.10263264551758766"/>
+							<ScoreDistribution value="0" recordCount="8"/>
+							<ScoreDistribution value="1" recordCount="0"/>
+						</Node>
+						<Node score="0" recordCount="1">
+							<SimplePredicate field="double(float(minMaxScaler(Zave (12.5 ug/ml))))" operator="lessOrEqual" value="0.2176128146238625"/>
+							<ScoreDistribution value="0" recordCount="1"/>
+							<ScoreDistribution value="1" recordCount="0"/>
+						</Node>
+						<Node score="1" recordCount="5">
+							<SimplePredicate field="double(float(minMaxScaler(Length ave. (nm) )))" operator="lessOrEqual" value="0.4229024574160576"/>
+							<ScoreDistribution value="0" recordCount="0"/>
+							<ScoreDistribution value="1" recordCount="5"/>
+						</Node>
+						<Node score="0" recordCount="1">
+							<True/>
+							<ScoreDistribution value="0" recordCount="1"/>
+							<ScoreDistribution value="1" recordCount="0"/>
+						</Node>
+					</Node>
+				</TreeModel>
+			</Segment>
+			<Segment id="12">
+				<True/>
+				<TreeModel functionName="classification" missingValueStrategy="nullPrediction">
+					<MiningSchema>
+						<MiningField name="double(float(minMaxScaler(Length ave. (nm) )))"/>
+						<MiningField name="double(float(minMaxScaler(Purity (%))))"/>
+						<MiningField name="double(float(minMaxScaler(Zave (12.5 ug/ml))))"/>
+					</MiningSchema>
+					<Node>
+						<True/>
+						<Node score="0" recordCount="8">
+							<SimplePredicate field="double(float(minMaxScaler(Zave (12.5 ug/ml))))" operator="lessOrEqual" value="0.1659388691186905"/>
+							<ScoreDistribution value="0" recordCount="8"/>
+							<ScoreDistribution value="1" recordCount="0"/>
+						</Node>
+						<Node score="1" recordCount="5">
+							<SimplePredicate field="double(float(minMaxScaler(Purity (%))))" operator="lessOrEqual" value="0.9402174055576324"/>
+							<ScoreDistribution value="0" recordCount="0"/>
+							<ScoreDistribution value="1" recordCount="5"/>
+						</Node>
+						<Node score="0" recordCount="1">
+							<SimplePredicate field="double(float(minMaxScaler(Length ave. (nm) )))" operator="lessOrEqual" value="0.5191368628293276"/>
+							<ScoreDistribution value="0" recordCount="1"/>
+							<ScoreDistribution value="1" recordCount="0"/>
+						</Node>
+						<Node score="1" recordCount="1">
+							<True/>
+							<ScoreDistribution value="0" recordCount="0"/>
+							<ScoreDistribution value="1" recordCount="1"/>
+						</Node>
+					</Node>
+				</TreeModel>
+			</Segment>
+			<Segment id="13">
+				<True/>
+				<TreeModel functionName="classification" missingValueStrategy="nullPrediction">
+					<MiningSchema>
+						<MiningField name="double(float(minMaxScaler(Length ave. (nm) )))"/>
+						<MiningField name="double(float(minMaxScaler(Purity (%))))"/>
+						<MiningField name="double(float(minMaxScaler(Zave (12.5 ug/ml))))"/>
+					</MiningSchema>
+					<Node>
+						<True/>
+						<Node score="0" recordCount="4">
+							<SimplePredicate field="double(float(minMaxScaler(Zave (12.5 ug/ml))))" operator="lessOrEqual" value="0.16011644899845123"/>
+							<ScoreDistribution value="0" recordCount="4"/>
+							<ScoreDistribution value="1" recordCount="0"/>
+						</Node>
+						<Node score="0" recordCount="1">
+							<SimplePredicate field="double(float(minMaxScaler(Length ave. (nm) )))" operator="lessOrEqual" value="0.0508000236004591"/>
+							<ScoreDistribution value="0" recordCount="1"/>
+							<ScoreDistribution value="1" recordCount="0"/>
+						</Node>
+						<Node score="1" recordCount="8">
+							<SimplePredicate field="double(float(minMaxScaler(Length ave. (nm) )))" operator="lessOrEqual" value="0.44036979228258133"/>
+							<ScoreDistribution value="0" recordCount="0"/>
+							<ScoreDistribution value="1" recordCount="8"/>
+						</Node>
+						<Node score="1" recordCount="1">
+							<SimplePredicate field="double(float(minMaxScaler(Purity (%))))" operator="lessOrEqual" value="0.988586962223053"/>
+							<ScoreDistribution value="0" recordCount="0"/>
+							<ScoreDistribution value="1" recordCount="1"/>
+						</Node>
+						<Node score="0" recordCount="1">
+							<True/>
+							<ScoreDistribution value="0" recordCount="1"/>
+							<ScoreDistribution value="1" recordCount="0"/>
+						</Node>
+					</Node>
+				</TreeModel>
+			</Segment>
+			<Segment id="14">
+				<True/>
+				<TreeModel functionName="classification" missingValueStrategy="nullPrediction">
+					<MiningSchema>
+						<MiningField name="double(float(minMaxScaler(Length ave. (nm) )))"/>
+						<MiningField name="double(float(minMaxScaler(Zave (12.5 ug/ml))))"/>
+					</MiningSchema>
+					<Node>
+						<True/>
+						<Node score="0" recordCount="6">
+							<SimplePredicate field="double(float(minMaxScaler(Zave (12.5 ug/ml))))" operator="lessOrEqual" value="0.21106259524822235"/>
+							<ScoreDistribution value="0" recordCount="6"/>
+							<ScoreDistribution value="1" recordCount="0"/>
+						</Node>
+						<Node score="0" recordCount="1">
+							<SimplePredicate field="double(float(minMaxScaler(Length ave. (nm) )))" operator="lessOrEqual" value="0.0974117461591959"/>
+							<ScoreDistribution value="0" recordCount="1"/>
+							<ScoreDistribution value="1" recordCount="0"/>
+						</Node>
+						<Node score="1" recordCount="8">
+							<True/>
+							<ScoreDistribution value="0" recordCount="0"/>
+							<ScoreDistribution value="1" recordCount="8"/>
+						</Node>
+					</Node>
+				</TreeModel>
+			</Segment>
+			<Segment id="15">
+				<True/>
+				<TreeModel functionName="classification" missingValueStrategy="nullPrediction">
+					<MiningSchema>
+						<MiningField name="double(float(minMaxScaler(Length ave. (nm) )))"/>
+						<MiningField name="double(float(minMaxScaler(Purity (%))))"/>
+					</MiningSchema>
+					<Node>
+						<True/>
+						<Node score="1" recordCount="4">
+							<SimplePredicate field="double(float(minMaxScaler(Purity (%))))" operator="lessOrEqual" value="0.623369574546814"/>
+							<ScoreDistribution value="0" recordCount="0"/>
+							<ScoreDistribution value="1" recordCount="4"/>
+						</Node>
+						<Node score="0" recordCount="6">
+							<SimplePredicate field="double(float(minMaxScaler(Purity (%))))" operator="lessOrEqual" value="0.967391312122345"/>
+							<ScoreDistribution value="0" recordCount="6"/>
+							<ScoreDistribution value="1" recordCount="0"/>
+						</Node>
+						<Node score="0" recordCount="4">
+							<SimplePredicate field="double(float(minMaxScaler(Length ave. (nm) )))" operator="lessOrEqual" value="0.8405743837356567"/>
+							<ScoreDistribution value="0" recordCount="4"/>
+							<ScoreDistribution value="1" recordCount="0"/>
+						</Node>
+						<Node score="1" recordCount="1">
+							<True/>
+							<ScoreDistribution value="0" recordCount="0"/>
+							<ScoreDistribution value="1" recordCount="1"/>
+						</Node>
+					</Node>
+				</TreeModel>
+			</Segment>
+			<Segment id="16">
+				<True/>
+				<TreeModel functionName="classification" missingValueStrategy="nullPrediction">
+					<MiningSchema>
+						<MiningField name="double(float(minMaxScaler(Length ave. (nm) )))"/>
+						<MiningField name="double(float(minMaxScaler(Purity (%))))"/>
+						<MiningField name="double(float(minMaxScaler(Zave (12.5 ug/ml))))"/>
+					</MiningSchema>
+					<Node>
+						<True/>
+						<Node score="1" recordCount="2">
+							<SimplePredicate field="double(float(minMaxScaler(Purity (%))))" operator="lessOrEqual" value="0.8043478429317474"/>
+							<ScoreDistribution value="0" recordCount="0"/>
+							<ScoreDistribution value="1" recordCount="2"/>
+						</Node>
+						<Node>
+							<SimplePredicate field="double(float(minMaxScaler(Zave (12.5 ug/ml))))" operator="lessOrEqual" value="0.8296943306922913"/>
+							<Node score="0" recordCount="8">
+								<SimplePredicate field="double(float(minMaxScaler(Length ave. (nm) )))" operator="lessOrEqual" value="0.1251857727766037"/>
+								<ScoreDistribution value="0" recordCount="8"/>
+								<ScoreDistribution value="1" recordCount="0"/>
+							</Node>
+							<Node score="0" recordCount="2">
+								<SimplePredicate field="double(float(minMaxScaler(Zave (12.5 ug/ml))))" operator="lessOrEqual" value="0.2176128146238625"/>
+								<ScoreDistribution value="0" recordCount="2"/>
+								<ScoreDistribution value="1" recordCount="0"/>
+							</Node>
+							<Node score="1" recordCount="1">
+								<True/>
+								<ScoreDistribution value="0" recordCount="0"/>
+								<ScoreDistribution value="1" recordCount="1"/>
+							</Node>
+						</Node>
+						<Node score="1" recordCount="2">
+							<True/>
+							<ScoreDistribution value="0" recordCount="0"/>
+							<ScoreDistribution value="1" recordCount="2"/>
+						</Node>
+					</Node>
+				</TreeModel>
+			</Segment>
+			<Segment id="17">
+				<True/>
+				<TreeModel functionName="classification" missingValueStrategy="nullPrediction">
+					<MiningSchema>
+						<MiningField name="double(float(minMaxScaler(Length ave. (nm) )))"/>
+						<MiningField name="double(float(minMaxScaler(Zave (12.5 ug/ml))))"/>
+					</MiningSchema>
+					<Node>
+						<True/>
+						<Node score="0" recordCount="6">
+							<SimplePredicate field="double(float(minMaxScaler(Length ave. (nm) )))" operator="lessOrEqual" value="0.05602092295885086"/>
+							<ScoreDistribution value="0" recordCount="6"/>
+							<ScoreDistribution value="1" recordCount="0"/>
+						</Node>
+						<Node score="0" recordCount="1">
+							<SimplePredicate field="double(float(minMaxScaler(Zave (12.5 ug/ml))))" operator="lessOrEqual" value="0.0989810791797936"/>
+							<ScoreDistribution value="0" recordCount="1"/>
+							<ScoreDistribution value="1" recordCount="0"/>
+						</Node>
+						<Node score="1" recordCount="5">
+							<SimplePredicate field="double(float(minMaxScaler(Zave (12.5 ug/ml))))" operator="lessOrEqual" value="0.448326051235199"/>
+							<ScoreDistribution value="0" recordCount="0"/>
+							<ScoreDistribution value="1" recordCount="5"/>
+						</Node>
+						<Node score="0" recordCount="1">
+							<SimplePredicate field="double(float(minMaxScaler(Zave (12.5 ug/ml))))" operator="lessOrEqual" value="0.6310043632984161"/>
+							<ScoreDistribution value="0" recordCount="1"/>
+							<ScoreDistribution value="1" recordCount="0"/>
+						</Node>
+						<Node score="1" recordCount="2">
+							<True/>
+							<ScoreDistribution value="0" recordCount="0"/>
+							<ScoreDistribution value="1" recordCount="2"/>
+						</Node>
+					</Node>
+				</TreeModel>
+			</Segment>
+			<Segment id="18">
+				<True/>
+				<TreeModel functionName="classification" missingValueStrategy="nullPrediction">
+					<MiningSchema>
+						<MiningField name="double(float(minMaxScaler(Length ave. (nm) )))"/>
+						<MiningField name="double(float(minMaxScaler(Purity (%))))"/>
+					</MiningSchema>
+					<Node>
+						<True/>
+						<Node score="0" recordCount="5">
+							<SimplePredicate field="double(float(minMaxScaler(Length ave. (nm) )))" operator="lessOrEqual" value="0.1251857727766037"/>
+							<ScoreDistribution value="0" recordCount="5"/>
+							<ScoreDistribution value="1" recordCount="0"/>
+						</Node>
+						<Node score="1" recordCount="6">
+							<SimplePredicate field="double(float(minMaxScaler(Purity (%))))" operator="lessOrEqual" value="0.945652186870575"/>
+							<ScoreDistribution value="0" recordCount="0"/>
+							<ScoreDistribution value="1" recordCount="6"/>
+						</Node>
+						<Node score="0" recordCount="2">
+							<SimplePredicate field="double(float(minMaxScaler(Purity (%))))" operator="lessOrEqual" value="0.967391312122345"/>
+							<ScoreDistribution value="0" recordCount="2"/>
+							<ScoreDistribution value="1" recordCount="0"/>
+						</Node>
+						<Node score="0" recordCount="1">
+							<SimplePredicate field="double(float(minMaxScaler(Length ave. (nm) )))" operator="lessOrEqual" value="0.8405743837356567"/>
+							<ScoreDistribution value="0" recordCount="1"/>
+							<ScoreDistribution value="1" recordCount="0"/>
+						</Node>
+						<Node score="1" recordCount="1">
+							<True/>
+							<ScoreDistribution value="0" recordCount="0"/>
+							<ScoreDistribution value="1" recordCount="1"/>
+						</Node>
+					</Node>
+				</TreeModel>
+			</Segment>
+			<Segment id="19">
+				<True/>
+				<TreeModel functionName="classification" missingValueStrategy="nullPrediction">
+					<MiningSchema>
+						<MiningField name="double(float(minMaxScaler(Purity (%))))"/>
+					</MiningSchema>
+					<Node>
+						<True/>
+						<Node score="1" recordCount="8">
+							<SimplePredicate field="double(float(minMaxScaler(Purity (%))))" operator="lessOrEqual" value="0.9402174055576324"/>
+							<ScoreDistribution value="0" recordCount="0"/>
+							<ScoreDistribution value="1" recordCount="8"/>
+						</Node>
+						<Node score="0" recordCount="7">
+							<True/>
+							<ScoreDistribution value="0" recordCount="7"/>
+							<ScoreDistribution value="1" recordCount="0"/>
+						</Node>
+					</Node>
+				</TreeModel>
+			</Segment>
+		</Segmentation>
+	</MiningModel>
 </PMML>
